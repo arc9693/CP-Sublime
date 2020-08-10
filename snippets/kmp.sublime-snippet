@@ -1,0 +1,29 @@
+<snippet>
+	<content><![CDATA[
+vector<int> construct(string &s)
+{
+	int n=s.size();
+	vector<int> lps(n,0);
+	int i=1;
+	int len=0;
+	while(i<n)
+	{
+		if(s[i]==s[len])
+		{
+			len++;
+			lps[i++]=len;
+		}
+		else
+		{
+			if(len) len=lps[len-1];
+			else lps[i++]=0;
+		}
+	}
+	return lps;
+}
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<!-- <tabTrigger>hello</tabTrigger> -->
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<!-- <scope>source.python</scope> -->
+</snippet>
