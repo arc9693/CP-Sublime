@@ -1,0 +1,125 @@
+<snippet>
+	<content><![CDATA[
+
+typedef pair<int,int> pi;
+
+int walk(int u,int d,vector<vector<pi>> &table)
+{
+    int i=0;
+    while((d>>i)&&u!=-1)
+    {
+        if((d>>i)&1) u=table[u][i].first;
+        i++;
+    }
+    return u;
+}
+
+int lca(int u,int v, int &k, vector<int> &level, vector<vector<pi>> &table)
+{
+    if(level[u]>level[v])
+        u=walk(u,level[u]-level[v],table);
+    if(level[v]>level[u])
+        v=walk(v,level[v]-level[u],table);
+    if(u==v) return u;
+    
+    // binary search
+    for (int d = k; d >= 0; --d) {
+        if (table[u][d].first!=table[v][d].first)
+            {
+                u = table[u][d].first;
+                v = table[v][d].first;
+            }
+    }
+    return table[u][0].first;
+}
+
+int m_edge(int u,int d,vector<vector<pi>> &table)
+{
+    int i=0;
+    int ans=0;
+    while((d>>i)&&u!=-1)
+    {
+        if((d>>i)&1){int v=u;u=table[v][i].first; ans=max(ans,table[v][i].second);}
+        i++;
+    }
+    return ans;
+}
+
+vector<int> solve(vector<vector<int> > &A, vector<vector<int> > &B) {
+    int n,k;
+    vector<vector<pi>> g,table;
+    vector<bool> visited;
+    vector<int> level;
+
+    n=A.size()+1;
+    g.resize(n,vector<pi>());
+    visited.resize(n,0);
+    level.resize(n,0);
+    k=log2(n);
+    table.resize(n,vector<pi>(k+1,{-1,-1}));
+    
+    for(int i=0;i<n-1;i++)
+    {
+        int u=A[i][0]-1;
+        int v=A[i][1]-1;
+        int w=A[i][2];
+        g[u].push_back({v,w});
+        g[v].push_back({u,w});
+    }
+    
+    // bfs to fill parent array
+    queue<int> q;
+    q.push(0); // make 0 root
+    while(q.size())
+    {
+        int curr=q.front();
+      //  cout<<curr<<" "<<level[curr]<<endl;
+        visited[curr]=1;
+        q.pop();
+        for(int i=0;i<g[curr].size();i++)
+        {
+            if(!visited[g[curr][i].first])
+            {
+                level[g[curr][i].first]=level[curr]+1;
+                table[g[curr][i].first][0]={curr,g[curr][i].second};
+                q.push(g[curr][i].first);
+            }
+        }
+    }
+
+    for(int d=1;d<=k;d++)
+    {
+        for(int i=0;i<n;i++)
+        {
+            int u=table[i][d-1].first;
+            int w=table[i][d-1].second;
+            if(u!=-1)
+            {
+                int v=table[u][d-1].first;
+                w=max(w,table[u][d-1].second);
+                if(v!=-1)
+                table[i][d]={v,w};
+                else table[i][d]={-1,-1};
+            }
+            else table[i][d]={-1,-1};
+        }
+    }
+
+    vector<int> ans(B.size(),0);
+    for(int q=0;q<B.size();q++)
+    {
+        int u=B[q][0]-1;
+        int v=B[q][1]-1;
+        int ancestor=lca(u,v,k,level,table);
+       // cout<<"ancestor="<<ancestor<<endl;
+        ans[q]=max(m_edge(u,level[u]-level[ancestor],table),m_edge(v,level[v]-level[ancestor],table));
+    }
+    return ans;
+}
+
+]]></content>
+	<!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+	<tabTrigger>blifting</tabTrigger>
+	<!-- Optional: Set a scope to limit where the snippet will trigger -->
+	<scope>source.c++</scope> 
+</snippet>
